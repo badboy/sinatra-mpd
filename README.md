@@ -7,7 +7,7 @@ Requirements:
 -------------
 
 * Ruby (of course)
-* MPD (of course)
+* [MPD] (of course)
 * [Sinatra][gitsinatra]
 
 Usage:
@@ -22,7 +22,7 @@ Then start the server:
 
     rackup config.ru
 
-and browse the interface at [http://localhost:9292/]
+and browse the interface at [http://localhost:9292/]()
 
 Copyright:
 ----------
