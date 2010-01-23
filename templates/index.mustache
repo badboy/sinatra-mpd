@@ -1,0 +1,25 @@
+<p>np: {{song}}</p>
+<p>State: {{state}}</p>
+<p> 
+  <a href="/prev">«</a>
+  {{#is_not_playing}}
+  <a href="/play">Play</a>
+  {{/is_not_playing}}
+
+  {{#is_playing}}
+  <a href="/stop">Stop</a>
+  {{/is_playing}}
+  <a href="/pause">Pause</a>
+  <a href="/next">»</a>
+</p>
+
+<ul>
+  {{#playlist}}
+  <li>
+    {{#current}}
+    (current)
+    {{/current}}
+    <a href="play/{{id}}">{{entry}}</a>
+  </li>
+  {{/playlist}}
+</ul>
