@@ -7,7 +7,7 @@ Requirements:
 -------------
 
 * Ruby (of course)
-* [MPD] (of course)
+* [MPD][] (of course)
 * [Sinatra][gitsinatra]
 
 Usage:
