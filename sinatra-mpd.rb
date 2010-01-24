@@ -7,7 +7,7 @@ require 'mpd'
 class SinatraMPD < Sinatra::Base
   use_in_file_templates!
 
-  set :mpd_host, "localhost"
+  set :mpd_host, 'localhost'
   set :mpd_port, 6600
 
   before do
@@ -16,7 +16,7 @@ class SinatraMPD < Sinatra::Base
         @mpd = MPD.new(options.mpd_host, options.mpd_port)
         @mpd.ping
         headers({ 'Cache-Control' => 'no-cache' })
-      rescue Errno::ECONNREFUSED
+      rescue Errno::ECONNREFUSED, EOFError
         redirect '/error'
       end
     end
@@ -30,6 +30,16 @@ class SinatraMPD < Sinatra::Base
         song.file
       end
     end
+
+    def control_mpd(command, *args)
+      if args && !args.empty?
+        @mpd.send(command, *args)
+      else
+        @mpd.send(command)
+      end
+    rescue EOFError
+      redirect '/error'
+    end
   end
 
   get '/error' do
@@ -39,7 +49,7 @@ class SinatraMPD < Sinatra::Base
   end
 
   get '/' do
-    @title = "Sinatra-MPD @ #{options.mpd_host}"
+    @title = 'Sinatra-MPD'
     @state = @mpd.status['state']
     @is_playing = @state == 'play'
     @song = song_or_file(@mpd.currentsong)
@@ -55,14 +65,14 @@ class SinatraMPD < Sinatra::Base
     id = params[:id].to_i
     unless id == 0
       id -= 1
-      @mpd.play id
+      control_mpd(:play, id)
     end
     redirect '/'
   end
 
   %w[play pause stop prev next].each do |action|
     get "/#{action}" do
-      @mpd.send(action)
+      control_mpd(action)
       redirect '/'
     end
   end
