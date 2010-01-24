@@ -1,10 +1,9 @@
-#!/usr/bin/env ruby18
+#!/usr/bin/env ruby
 # encoding: utf-8
 
 require 'sinatra/base'
 require 'mustache/sinatra'
 require 'mpd'
-
 
 class SinatraMPD < Sinatra::Base
   register Mustache::Sinatra
@@ -20,9 +19,21 @@ class SinatraMPD < Sinatra::Base
         @mpd = MPD.new(options.mpd_host, options.mpd_port)
         @mpd.ping
         headers({ 'Cache-Control' => 'no-cache' })
-      rescue Errno::ECONNREFUSED
+      rescue Errno::ECONNREFUSED, EOFError
         redirect '/error'
       end
+    end
+  end
+
+  helpers do
+    def control_mpd(command, *args)
+      if args && !args.empty?
+        @mpd.send(command, *args)
+      else
+        @mpd.send(command)
+      end
+    rescue EOFError
+      redirect '/error'
     end
   end
 
@@ -42,14 +53,14 @@ class SinatraMPD < Sinatra::Base
     id = params[:id].to_i
     unless id == 0
       id -= 1
-      @mpd.play id
+      control_mpd(:play, id)
     end
     redirect '/'
   end
 
   %w[play pause stop prev next].each do |action|
     get "/#{action}" do
-      @mpd.send(action)
+      control_mpd(action)
       redirect '/'
     end
   end
