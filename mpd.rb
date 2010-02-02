@@ -124,14 +124,9 @@ class MPD
     @overwrite_playlist = true
     @allow_toggle_states = true
     @debug_socket = false
-  
-    @mpd_host = mpd_host
-    @mpd_host = ENV['MPD_HOST'] if @mpd_host.nil?
-    @mpd_host = DEFAULT_MPD_HOST if @mpd_host.nil?
 
-    @mpd_port = mpd_port
-    @mpd_port = ENV['MPD_PORT'] if @mpd_port.nil?
-    @mpd_port = DEFAULT_MPD_PORT if @mpd_port.nil?
+    @mpd_host = mpd_host || ENV['MPD_HOST'] || DEFAULT_MPD_HOST
+    @mpd_port = mpd_port || ENV['MPD_PORT'] || DEFAULT_MPD_PORT
 
     @socket = nil
     @mpd_version = nil
