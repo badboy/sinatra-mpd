@@ -1,14 +1,12 @@
 #!/usr/bin/env ruby
 # encoding: utf-8
 
-require 'sinatra/base'
 require 'mpd'
 
 class SinatraMPD < Sinatra::Base
-  use_in_file_templates!
-
   set :mpd_host, 'localhost'
   set :mpd_port, 6600
+  enable :inline_templates
 
   before do
     if request.env['PATH_INFO'] != '/error'
@@ -98,7 +96,7 @@ __END__
 @@index
 <p>np: <%= @song %></p>
 <p>State: <%= @state %></p>
-<p> 
+<p>
   <a href="/prev">«</a>
   <% if not @is_playing %>
     <a href="/play">Play</a>
