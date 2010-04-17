@@ -1,0 +1,42 @@
+#info
+  .toolbar
+    %h1 
+      MPD
+      [
+      = @state
+      ]
+  %ul.rounded
+    %li
+      np:
+      = @song
+  %ul.rounded{ :style => "text-align:center;" }
+    %li
+      - if not @is_playing
+        %a{ :href => "/play" }
+          Play
+      - else
+        %a{ :href => "/stop" }
+          Stop
+    %li
+      %a{ :href => "/pause" }
+        Pause
+    %li
+      %a{ :href => "/prev" }
+        « Previous
+    %li
+      %a{ :href => "/next" }
+        Next »
+
+
+#playlist
+  .toolbar
+    %h1 Playlist
+  %ul.rounded
+    - @playlist.each do |(id,entry,current)|
+      %li
+        - if current
+          (current)
+        %a{ :href => "play/#{id}" }
+          = entry
+
+

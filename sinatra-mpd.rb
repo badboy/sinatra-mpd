@@ -1,12 +1,14 @@
 #!/usr/bin/env ruby
 # encoding: utf-8
 
+require 'haml'
 require 'mpd'
 
 class SinatraMPD < Sinatra::Base
+  set :root, File.dirname(__FILE__)
+
   set :mpd_host, 'localhost'
   set :mpd_port, 6600
-  enable :inline_templates
 
   before do
     if request.env['PATH_INFO'] != '/error'
@@ -43,7 +45,7 @@ class SinatraMPD < Sinatra::Base
   get '/error' do
     @title = 'Sinatra-MPD | error'
     @options = options
-    erb :error
+    haml :error
   end
 
   get '/' do
@@ -56,7 +58,7 @@ class SinatraMPD < Sinatra::Base
           [ i+=1, song_or_file(song), @mpd.currentsong == song ]
     end
 
-    erb :index
+    haml :index
   end
 
   get '/play/:id' do
@@ -75,61 +77,3 @@ class SinatraMPD < Sinatra::Base
     end
   end
 end
-
-__END__
-@@layout
-<!DOCTYPE html>
-<html>
-  <head>
-    <meta content='text/html; charset=UTF-8' http-equiv='Content-Type' />
-    <title>
-      <%= @title %>
-    </title>
-  </head>
-  <body>
-    <div id="main">
-      <%= yield %>
-    </div>
-  </body>
-</html>
-
-@@index
-<p>np: <%= @song %></p>
-<p>State: <%= @state %></p>
-<p>
-  <a href="/prev">«</a>
-  <% if not @is_playing %>
-    <a href="/play">Play</a>
-  <%end%>
-
-  <% if @is_playing %>
-    <a href="/stop">Stop</a>
-  <%end%>
-  <a href="/pause">Pause</a>
-  <a href="/next">»</a>
-</p>
-
-<ul>
-  <% @playlist.each do |(id,entry,current)| %>
-  <li>
-    <% if current %>
-      (current)
-    <%end%>
-    <a href="play/<%= id %>"><%= entry %></a>
-  </li>
-  <%end%>
-</ul>
-
-
-@@error
-<h1>an error occured</h1>
-<p>
-  maybe it's misconfigured.
-</p>
-<p>
-  MPD to connect to at: <strong><%= @options.mpd_host %>:<%= @options.mpd_port %></strong>
-</p>
-
-<p>
-  <a href="/">reload</a>
-</p>

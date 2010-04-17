@@ -1,0 +1,20 @@
+#info
+  .toolbar
+    %h1 
+      MPD
+    %a{ :href => "/", :class => "button" }
+      Reload
+  %ul.rounded
+    %li
+      %h2 An error occured.
+      Maybe it's misconfigured?
+
+  %ul.rounded
+    %li
+      MPD to connect to at: 
+      %strong
+        = "#{@options.mpd_host}:#{@options.mpd_port}"
+  %ul.rounded
+    %li.error
+      %a{ :href => "/" }
+        Reload
