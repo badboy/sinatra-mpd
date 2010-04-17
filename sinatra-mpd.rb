@@ -8,8 +8,12 @@ require 'mpd'
 class SinatraMPD < Sinatra::Base
   register Mustache::Sinatra
   require 'views/layout'
-  set :views, 'templates/'
-  set :mustaches, 'views/'
+
+  set :mustache, {
+    :views => 'views/',
+    :templates => 'templates/'
+  }
+
   set :mpd_host, "localhost"
   set :mpd_port, 6600
 
