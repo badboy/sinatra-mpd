@@ -34,7 +34,7 @@ You can find it in the [iphone][] branch.
 
 Because I don't own an Iphone and I don't even want one, I took a screenshot using Chromium:
 
-![iphone design](iphone_design.png)
+![iphone design](http://github.com/badboy/sinatra-mpd/raw/iphone/iphone_design.png)
 
 Copyright:
 ----------
