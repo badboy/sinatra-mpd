@@ -170,7 +170,7 @@ __END__
   <% @playlist.each do |(id,entry,current)| %>
   <li>
     <% if current %>
-      <span style="color:red;">(current)</span>
+      <span id="current" style="color:red;">(current)</span>
     <%end%>
     <a href="play/<%= id %>"><%= entry %></a>
   </li>
