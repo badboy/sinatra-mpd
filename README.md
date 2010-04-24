@@ -16,13 +16,17 @@ Usage:
 Edit sinatra-mpd.rb and change MPD host and port to your local settings.
 
 Note that I did not implemented the requirement for a password, 
-but the mpd.rb can handle this, so change this if you need it.
+but mpd.rb can handle this, so change this if you need it.
 
 Then start the server:
 
     rackup config.ru
 
 and browse the interface at [http://localhost:9292/](http://localhost:9292/)
+
+I use this interface with an Nokia E71.
+With the latest patches (proper highlighting, search function, volume control [24/04/2010])
+it is very useful for simple and fast music playing.
 
 More:
 -----
