@@ -50,6 +50,14 @@ class SinatraMPD < Sinatra::Base
     @title = 'Sinatra-MPD'
     @state = @mpd.status['state']
     @is_playing = @state == 'play'
+
+    @vol = @mpd.status['volume']
+    begin
+      @vol = Integer(@vol)
+    rescue ArgumentError
+      @vol = nil
+    end
+
     @song = song_or_file(@mpd.currentsong)
     i = 0
     @playlist = @mpd.playlistinfo.map do |song|
@@ -57,6 +65,36 @@ class SinatraMPD < Sinatra::Base
     end
 
     erb :index
+  end
+
+  get '/vol/' do
+    begin
+      new_vol = Integer(params[:vol])
+      control_mpd(:setvol, new_vol)
+    rescue ArgumentError
+      nil
+    ensure
+      redirect '/'
+    end
+  end
+
+  get '/vol/:vol' do
+    begin
+      vol = Integer(@mpd.status['volume'])
+      new_vol = vol
+      case params[:vol]
+      when 'plus'
+        new_vol += 10 unless vol >= 100
+      when 'minus'
+        new_vol -= 10 unless vol <= 0
+        puts "vol = #{vol.inspect}\nnew_vol = #{new_vol.inspect}"
+      end
+      control_mpd(:setvol, new_vol)
+    rescue ArgumentError
+      nil
+    ensure
+      redirect '/'
+    end
   end
 
   get '/play/:id' do
@@ -96,6 +134,25 @@ __END__
 @@index
 <p>np: <%= @song %></p>
 <p>State: <%= @state %></p>
+<form action="/vol/" style="display:inline;">
+  <p>
+    Volume:
+    <select name="vol">
+    <% [100, 90, 80, 70, 60, 50, 40, 30, 20, 10, 0].each do |vol| %>
+      <% if @vol == vol %>
+        <option value="<%=vol%>" selected="selected">! <%=vol%>%</option>
+      <%else%>
+        <option value="<%=vol%>"><%=vol%>%</option>
+      <%end%>
+    <%end%>
+    </select>
+    <input type="submit" value="Ok"/>
+    <a href="/vol/plus">+</a>
+    |
+    <a href="/vol/minus">-</a>
+  </p>
+</form>
+
 <p>
   <a href="/prev">«</a>
   <% if not @is_playing %>
@@ -113,7 +170,7 @@ __END__
   <% @playlist.each do |(id,entry,current)| %>
   <li>
     <% if current %>
-      (current)
+      <span style="color:red;">(current)</span>
     <%end%>
     <a href="play/<%= id %>"><%= entry %></a>
   </li>
