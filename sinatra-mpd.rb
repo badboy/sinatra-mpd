@@ -2,6 +2,7 @@
 # encoding: utf-8
 
 require 'mpd'
+require 'cgi'
 
 class SinatraMPD < Sinatra::Base
   set :mpd_host, 'localhost'
@@ -38,6 +39,10 @@ class SinatraMPD < Sinatra::Base
     rescue EOFError
       redirect '/error'
     end
+
+    def add_link(file)
+      CGI.escape(file.gsub('/', '|').gsub('&', '||'))
+    end
   end
 
   get '/error' do
@@ -61,7 +66,7 @@ class SinatraMPD < Sinatra::Base
     @song = song_or_file(@mpd.currentsong)
     i = 0
     @playlist = @mpd.playlistinfo.map do |song|
-          [ i+=1, song_or_file(song), @mpd.currentsong == song ]
+      [ i+=1, song_or_file(song), @mpd.currentsong == song ]
     end
 
     erb :index
@@ -103,6 +108,33 @@ class SinatraMPD < Sinatra::Base
       id -= 1
       control_mpd(:play, id)
     end
+    redirect '/#current'
+  end
+
+  get '/search' do
+    @result = nil
+    @q = nil
+    if params[:q]
+      q = params[:q]
+      @q = CGI.escapeHTML(q)
+      @result = @mpd.listallinfo.select{ |item|
+        [:file, :artist, :album, :title].any? { |meth|
+          item.send(meth) =~ /#{Regexp.escape(q)}/i
+        }
+      }
+    end
+
+    erb :search
+  end
+
+  get '/add/:file' do
+    searched_file = CGI.unescape(params[:file]).gsub('||', '&').gsub('|', '/')
+    if searched_file
+      file_add = @mpd.listall.select { |file|
+        file == searched_file
+      }
+      control_mpd(:add, file_add)
+    end
     redirect '/'
   end
 
@@ -128,12 +160,19 @@ __END__
     <div id="main">
       <%= yield %>
     </div>
+
+    <p><a href="#main">top</a></p>
   </body>
 </html>
 
 @@index
+<p>
+  <a href="/">reload</a> |
+  <a href="/#current">current</a> |
+  <a href="/search">search</a>
+</p>
 <p>np: <%= @song %></p>
-<p>State: <%= @state %></p>
+<p>State: <%= @state %> (<%=@playlist.size%> files in playlist)</p>
 <form action="/vol/" style="display:inline;">
   <p>
     Volume:
@@ -170,13 +209,42 @@ __END__
   <% @playlist.each do |(id,entry,current)| %>
   <li>
     <% if current %>
-      <span id="current" style="color:red;">(current)</span>
+      <a href="play/<%= id %>" style="color:red;" id="current">
+        <%= entry %>
+      </a>
+    <%else%>
+      <a href="play/<%= id %>"><%= entry %></a>
     <%end%>
-    <a href="play/<%= id %>"><%= entry %></a>
   </li>
   <%end%>
 </ul>
 
+
+@@search
+<p><a href="/">return to main</a></p>
+<form action="/search">
+  <p>
+    <input type="text" name="q" value="<%=@q %>">
+    <input type="submit" value="Search"/>
+  </p>
+</form>
+
+<% if @result && !@result.empty? %>
+<p>click a file to add (<%=@result.size%> results)</p>
+<ul>
+  <% @result.each do |entry| %>
+  <li>
+    <a href="/add/<%=add_link entry.file %>">
+      <%= song_or_file entry %>
+    </a>
+  </li>
+  <%end%>
+</ul>
+<%elsif (@result.nil? || @result.empty?) && @q %>
+  <p style="color:red;">nothing found</p>
+<%else%>
+  searching for something? just type it!
+<%end%>
 
 @@error
 <h1>an error occured</h1>
